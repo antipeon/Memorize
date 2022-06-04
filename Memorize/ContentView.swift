@@ -8,55 +8,55 @@
 import SwiftUI
 
 struct ContentView: View {
-    var emojis = ["😀", "😍", "😇", "🤪", "😎", "😡",
-    "😤", "😈", "🤢", "🥶", "💀", "🤡", "🎃", "💩"]
     @State var cardsCount = 3
-    
-    var body: some View {
+    let themeCount: Int = 3
+    @State var theme = ThemeChooser.getTheme(theme: .love)
+    var body: some View { 
         VStack {
+            Text("Memorize!")
+                .font(.largeTitle)
             ScrollView {
                 LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
-                    ForEach(emojis[0..<cardsCount], id: \.self, content: {
+                    ForEach(theme.emojis[0..<cardsCount], id: \.self, content: {
                         emoji in
                         CardView(content: emoji).aspectRatio(2/3, contentMode: .fit)
                     })
                 }
                 .foregroundColor(.red)
             }
-            
-            Spacer()
             HStack {
-                add
-                Spacer()
-                remove
+                ForEach(0..<themeCount) {
+                    id in
+                    let title = ThemeChooser.ThemeTitle(rawValue: id)
+                    
+                    if title != nil {
+                        let nextTheme = ThemeChooser.getTheme(theme: title!)
+                        
+                        Button {
+                            theme = ThemeChooser.getTheme(theme: nextTheme.themeTitle)
+                        } label: {
+                            VStack {
+                                nextTheme.label
+                                Text(nextTheme.title)
+                                    .font(.title3)
+                            }
+                            
+                            
+                        }
+                        if id != themeCount - 1 {
+                            Spacer()
+                        }
+                    }
+                    
+                }
             }
             .font(.largeTitle)
-            .padding(.horizontal)
+            
             
         }
         .padding(.horizontal)
         
         
-    }
-    
-    var add: some View {
-        Button {
-            if cardsCount < emojis.count {
-                cardsCount += 1
-            }
-        } label: {
-            Image(systemName: "plus.circle")
-        }
-    }
-    
-    var remove: some View {
-        Button {
-            if cardsCount > 0 {
-                cardsCount -= 1
-            }
-        } label: {
-            Image(systemName: "minus.circle")
-        }
     }
 }
 
@@ -91,5 +91,38 @@ struct ContentView_Previews: PreviewProvider {
             .preferredColorScheme(.light)
         ContentView()
             .preferredColorScheme(.dark)
+    }
+}
+
+
+struct ThemeChooser {
+    struct Theme {
+        var emojis: [String]
+        var title: String
+        var label: Image
+        var themeTitle: ThemeTitle
+    }
+    
+    private static var emojis = [
+        ["😀", "😍", "😇", "🤪", "😎", "😡", "😤", "😈", "🤢", "🥶" ,"🤡"],
+        ["🎃", "👻", "😈", "🍭", "🦇", "🔪", "👹", "💀"],
+        ["❤️", "💔", "💜", "💖", "💗", "💓", "😻", "👀"]
+    ]
+    enum ThemeTitle: Int {
+        case faces = 0
+        case corona
+        case love
+    }
+    
+    static func getTheme(theme: ThemeTitle) -> Theme {
+        let emojis = emojis[theme.rawValue].shuffled()
+        switch theme {
+        case .faces:
+            return Theme(emojis: emojis, title: "faces", label: Image(systemName: "face.smiling"), themeTitle: theme)
+        case .love:
+            return Theme(emojis: emojis, title: "love", label: Image(systemName: "heart"), themeTitle: theme)
+        case .corona:
+            return Theme(emojis: emojis, title: "corona", label: Image(systemName: "facemask"), themeTitle: theme)
+        }
     }
 }
