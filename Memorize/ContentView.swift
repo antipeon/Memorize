@@ -75,6 +75,7 @@ struct CardView: View {
                     .strokeBorder(lineWidth: 3)
                 Text(content)
                     .font(.largeTitle)
+                    .scaleEffect(2.0)
             } else {
                 shape.fill()
             }
@@ -84,16 +85,6 @@ struct CardView: View {
         }
     }
 }
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .preferredColorScheme(.light)
-        ContentView()
-            .preferredColorScheme(.dark)
-    }
-}
-
 
 struct ThemeChooser {
     struct Theme {
@@ -124,5 +115,27 @@ struct ThemeChooser {
         case .corona:
             return Theme(emojis: emojis, title: "corona", label: Image(systemName: "facemask"), themeTitle: theme)
         }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .preferredColorScheme(.light)
+//        ContentView()
+//            .preferredColorScheme(.dark)
     }
 }
