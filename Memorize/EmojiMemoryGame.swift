@@ -8,45 +8,49 @@
 import SwiftUI
 
 class EmojiMemoryGame: ObservableObject {
-    private static var theme = ThemeChooser.getTheme(theme: .love)
+    private var themeChooser = ThemeChooser()
     
-    @Published var memoryGame = createMemoryGame()
+    @Published private var theme: ThemeChooser.Theme!
     
-    private static func createMemoryGame() -> MemoryGame<String> {
-        MemoryGame<String>(numberOfPairsOfCards: 4) { cardIndex in
+    @Published private var model: MemoryGame<String>!
+    
+    init() {
+        startNewGame()
+    }
+    
+    private func createTheme() -> ThemeChooser.Theme {
+        ThemeChooser().getTheme()
+    }
+    
+    private func createMemoryGame() -> MemoryGame<String> {
+        MemoryGame<String>(numberOfPairsOfCards: theme.numberOfPairs) { cardIndex in
             theme.emojis[cardIndex]
         }
     }
-}
-
-struct ThemeChooser {
-    struct Theme {
-        var emojis: [String]
-        var title: String
-        var label: Image
-        var themeTitle: ThemeTitle
+    
+    var cards: Array<MemoryGame<String>.Card> {
+        model.cards
     }
     
-    private static var emojis = [
-        ["😀", "😍", "😇", "🤪", "😎", "😡", "😤", "😈", "🤢", "🥶" ,"🤡"],
-        ["🎃", "👻", "😈", "🍭", "🦇", "🔪", "👹", "💀", "👁", "🦾"],
-        ["❤️", "💔", "💜", "💖", "💗", "💓", "😻", "👀", "👚", "👨‍👩‍👦‍👦"]
-    ]
-    enum ThemeTitle: Int {
-        case faces = 0
-        case corona
-        case love
+    var foregroundColor: ThemeChooser.Theme.Color {
+        theme.color
     }
     
-    static func getTheme(theme: ThemeTitle) -> Theme {
-        let emojis = emojis[theme.rawValue].shuffled()
-        switch theme {
-        case .faces:
-            return Theme(emojis: emojis, title: "faces", label: Image(systemName: "face.smiling"), themeTitle: theme)
-        case .love:
-            return Theme(emojis: emojis, title: "love", label: Image(systemName: "heart"), themeTitle: theme)
-        case .corona:
-            return Theme(emojis: emojis, title: "corona", label: Image(systemName: "facemask"), themeTitle: theme)
-        }
+    var themeName: String {
+        theme.title
+    }
+    
+    var score: String {
+        String(model.scoreTracker.score)
+    }
+    
+    // MARK: - Intent(s)
+    func choose(_ card: MemoryGame<String>.Card) {
+        model.choose(card)
+    }
+    
+    func startNewGame() {
+        theme = themeChooser.getTheme()
+        model = createMemoryGame()
     }
 }

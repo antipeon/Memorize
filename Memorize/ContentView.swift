@@ -8,86 +8,89 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var cardsCount = 10
-    let themeCount: Int = 3
-    @State var theme = ThemeChooser.getTheme(theme: .love)
-    var body: some View { 
+    @ObservedObject var game: EmojiMemoryGame
+
+    var body: some View {
         VStack {
-            Text("Memorize!")
+            Text(game.themeName)
                 .font(.largeTitle)
             ScrollView {
-                LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
-                    ForEach(theme.emojis[0..<cardsCount], id: \.self, content: {
-                        emoji in
-                        CardView(content: emoji).aspectRatio(2/3, contentMode: .fit)
-                    })
-                }
-                .foregroundColor(.red)
+                cardsContent
             }
             HStack {
-                ForEach(0..<themeCount) {
-                    id in
-                    let title = ThemeChooser.ThemeTitle(rawValue: id)
-                    
-                    if title != nil {
-                        let nextTheme = ThemeChooser.getTheme(theme: title!)
-                        
-                        Button {
-                            theme = ThemeChooser.getTheme(theme: nextTheme.themeTitle)
-                        } label: {
-                            VStack {
-                                nextTheme.label
-                                Text(nextTheme.title)
-                                    .font(.title3)
-                            }
-                            
-                            
-                        }
-                        if id != themeCount - 1 {
-                            Spacer()
-                        }
-                    }
-                    
-                }
+                newGameButton
+                Spacer()
+                score
             }
-            .font(.largeTitle)
-            
-            
         }
         .padding(.horizontal)
-        
-        
+    }
+    
+    private var cardsContent: some View {
+        LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
+            ForEach(game.cards, content: {
+                card in
+                CardView(card: card).aspectRatio(2/3, contentMode: .fit)
+                    .onTapGesture {
+                        game.choose(card)
+                    }
+            })
+        }
+        .foregroundColor(game.foregroundColor.toUIColor())
+    }
+    
+    private var newGameButton: some View {
+        Button {
+            game.startNewGame()
+        } label: {
+            Image(systemName: "arrow.counterclockwise").font(.largeTitle)
+        }
+    }
+    
+    private var score: some View {
+        Text(game.score)
+            .font(.largeTitle)
     }
 }
 
 struct CardView: View {
-    @State var isFaceUp = true
-    var content: String
+    var card: MemoryGame<String>.Card
     
     var body: some View {
         ZStack {
             let shape = RoundedRectangle(cornerRadius: 30.0)
-            if isFaceUp {
+            if card.isFaceUp {
                 shape
                     .fill()
                     .foregroundColor(.white)
                 shape
                     .strokeBorder(lineWidth: 3)
-                Text(content)
+                Text(card.content)
                     .font(.largeTitle)
                     .scaleEffect(2.0)
+            } else if card.isMatched {
+                shape.opacity(0.0)
             } else {
                 shape.fill()
             }
-        }
-        .onTapGesture {
-            isFaceUp = !isFaceUp
         }
     }
 }
 
 
+extension ThemeChooser.Theme.Color {
 
+    func toUIColor() -> Color {
+        switch self {
+        case .orange:
+            return Color.orange
+        case .blue:
+            return Color.blue
+        case .red:
+            return Color.red
+        }
+    }
+}
 
 
 
@@ -100,10 +103,11 @@ struct CardView: View {
 
 
 struct ContentView_Previews: PreviewProvider {
+        
     static var previews: some View {
-        ContentView()
+        let game = EmojiMemoryGame()
+
+        ContentView(game: game)
             .preferredColorScheme(.light)
-//        ContentView()
-//            .preferredColorScheme(.dark)
     }
 }
