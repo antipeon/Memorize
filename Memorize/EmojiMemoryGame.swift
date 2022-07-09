@@ -8,18 +8,17 @@
 import SwiftUI
 
 class EmojiMemoryGame: ObservableObject {
-    private var themeChooser = ThemeChooser()
-    
-    @Published private var theme: ThemeChooser.Theme!
+    var theme: Theme! {
+        didSet {
+            startNewGame()
+        }
+    }
     
     @Published private var model: MemoryGame<String>!
     
-    init() {
+    init(theme: Theme) {
+        self.theme = theme
         startNewGame()
-    }
-    
-    private func createTheme() -> ThemeChooser.Theme {
-        ThemeChooser().getTheme()
     }
     
     private func createMemoryGame() -> MemoryGame<String> {
@@ -32,8 +31,8 @@ class EmojiMemoryGame: ObservableObject {
         model.cards
     }
     
-    var foregroundColor: ThemeChooser.Theme.Color {
-        theme.color
+    var foregroundColor: Color {
+        Color(rgbaColor: theme.color)
     }
     
     var themeName: String {
@@ -50,7 +49,6 @@ class EmojiMemoryGame: ObservableObject {
     }
     
     func startNewGame() {
-        theme = themeChooser.getTheme()
         model = createMemoryGame()
     }
 }
