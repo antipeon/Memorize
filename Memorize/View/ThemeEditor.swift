@@ -51,18 +51,17 @@ struct ThemeEditor: View {
     
     private var emojisSection: some View {
         Section {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 40))]) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: Constants.Drawing.emojisSSectionFont))]) {
                 ForEach(theme.emojis, id: \.self) { emoji in
                     Text(emoji)
-                        .onChange(of: removeEmoji) { removedEmojis in
-                            theme.emojis.removeAll(where: { $0 == removedEmojis })
+                        .onChange(of: removeEmoji) { removedEmoji in
+                            theme.emojis.removeAll(where: { $0 == removedEmoji })
                         }
                         .onTapGesture {
-                            if theme.emojis.count > 2 {
+                            if theme.emojis.count > Constants.Numbers.minNumberOfPairsAllowed {
                                 removeEmoji = emoji
                             }
                         }
-                        
                 }
                 
             }
@@ -101,7 +100,7 @@ struct ThemeEditor: View {
     
     private var colorSection: some View {
         Section {
-            ChooseColor(theme: $theme)
+            ChooseColor(color: $theme.cgColor)
         } header: {
             Text(Constants.Headers.color)
         }
@@ -126,54 +125,41 @@ struct ThemeEditor: View {
             static let emojisSectionRightHeaderFontScale = 0.8
             static let emojisSSectionFont: CGFloat = 40
         }
+        
+        struct Numbers {
+            static let minNumberOfPairsAllowed = 2
+            static let stepperStep = 1
+        }
     }
     
     struct StepperView: View {
         @Binding var theme: Theme
         
-        @State var numberOfPairs: Int
-        
-        init(theme: Binding<Theme>) {
-            self._theme = theme
-            _numberOfPairs = State(wrappedValue: theme.wrappedValue.numberOfPairs)
-        }
-        
         var body: some View {
-            Stepper("\(numberOfPairs) pairs", value: $numberOfPairs, in: 2...theme.emojis.count, step: 1)
-                .onChange(of: numberOfPairs) { newNumberOfPairs in
-                    theme.numberOfPairs = newNumberOfPairs
-                    
-                }
-        }
-        
-        private var totalNumberOfPairs: Int {
-            theme.numberOfPairs
+            Stepper("\(theme.numberOfPairs) pairs",
+                    value: $theme.numberOfPairs,
+                    in: Constants.Numbers.minNumberOfPairsAllowed...theme.emojis.count,
+                    step: Constants.Numbers.stepperStep)
         }
     }
     
     struct ChooseColor: View {
-        @Binding var theme: Theme
-
-        @State private var color: Color
+        @Binding var color: Color
         
-        init(theme: Binding<Theme>) {
-            self._theme = theme
-            _color = State(initialValue: Color(rgbaColor: theme.wrappedValue.color))
-        }
-
         var body: some View {
             ColorPicker(Constants.Headers.color, selection: $color, supportsOpacity: true)
-                .onChange(of: color) { value in
-                    theme.color = RGBAColor(color: value)
-                }
         }
     }
 }
 
-
 extension Theme {
     var cgColor: Color {
-        Color(rgbaColor: self.color)
+        get {
+            Color(rgbaColor: self.color)
+        }
+        set {
+            color = RGBAColor(color: newValue)
+        }
     }
 }
 
@@ -182,6 +168,6 @@ extension Theme {
 
 struct ThemeEditor_Previews: PreviewProvider {
     static var previews: some View {
-        ThemeEditor(theme: .constant(ThemeStore().getTheme()))
+        ThemeEditor(theme: .constant(ThemeStore().themes.first!))
     }
 }

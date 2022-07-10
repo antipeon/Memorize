@@ -8,14 +8,66 @@
 import SwiftUI
 
 class ThemeStore: ObservableObject {
+    init(themes: [Theme]) {
+        self.themes = themes
+    }
+    
+    @Published var themes: [Theme] {
+        didSet {
+            autoSave()
+        }
+    }
     
     // MARK: Intent(s)
+    
     func addTheme(emojis: String, title: String, numberOfPairs: Int, color: Color) {
         themes.append(ThemeStore.createThemeWithComponents(emojis: Set(emojis.map { String($0) }),
-                                                                  title: title,
-                                                                  numberOfPairs: numberOfPairs,
-                                                                  color: Theme.RGBAColor(color: color)))
+                                                           title: title,
+                                                           numberOfPairs: numberOfPairs,
+                                                           color: Theme.RGBAColor(color: color)))
     }
+    
+    // MARK: Helper(s)
+    
+    private static func createThemeWithComponents(emojis: Set<String>,
+                                                  title: String,
+                                                  numberOfPairs: Int,
+                                                  color: Theme.RGBAColor) -> Theme {
+        let emojisArray = Array(emojis)
+        let emojisCount = min(emojisArray.count, numberOfPairs)
+        var indices = emojisArray.indices.shuffled()
+        indices.removeLast(indices.count - emojisCount)
+        return Theme(emojis: emojisArray,
+                     title: title.capitalized,
+                     numberOfPairs: emojisCount,
+                     color: color,
+                     playingEmojiIndices: indices.map { indices.firstIndex(of: $0)! })
+    }
+    
+    private static var emojis: [Set<String>] = [
+        ["😀", "😍", "😇", "🤪", "😎", "😡", "😤", "😈", "🤢", "🥶" ,"🤡"],
+        ["🎃", "👻", "😈", "🍭", "🦇", "🔪", "👹", "💀", "👁", "🦾"],
+        ["❤️", "💔", "💜", "💖", "💗", "💓", "😻", "👀", "👚", "👨‍👩‍👦‍👦"]
+    ]
+    
+    private static func getInitialThemes() -> [Theme] {
+        var themes = [Theme]()
+        themes.append(createThemeWithComponents(emojis: ThemeStore.emojis.first!,
+                                                title: "faces",
+                                                numberOfPairs: 4,
+                                                color: Theme.RGBAColor(color: Color.red)))
+        themes.append(createThemeWithComponents(emojis: ThemeStore.emojis[1],
+                                                title: "spooky",
+                                                numberOfPairs: 5,
+                                                color: Theme.RGBAColor(color: Color.orange)))
+        themes.append(createThemeWithComponents(emojis: ThemeStore.emojis.last!,
+                                                title: "love",
+                                                numberOfPairs: 3,
+                                                color: Theme.RGBAColor(color: Color.blue)))
+        return themes
+    }
+    
+    // MARK: Persistence
     
     struct Autosave {
         static let filename = "Themechooser"
@@ -44,67 +96,14 @@ class ThemeStore: ObservableObject {
             print("\(thisFunction) error = \(error)")
         }
     }
-    
-    init(themes: [Theme]) {
-        self.themes = themes
-    }
-    
+
     convenience init() {
-        let u = ThemeStore.Autosave.url
         if let url = ThemeStore.Autosave.url, let themes = try? ThemeStore.getThemesFromURL(url: url) {
             self.init(themes: themes)
         } else {
             self.init(themes: ThemeStore.getInitialThemes())
         }
         
-    }
-    
-    private static func getInitialThemes() -> [Theme] {
-        var themes = [Theme]()
-        themes.append(createThemeWithComponents(emojis: ThemeStore.emojis.first!,
-                                                title: "faces",
-                                                numberOfPairs: 4,
-                                                color: Theme.RGBAColor(color: Color.red)))
-        themes.append(createThemeWithComponents(emojis: ThemeStore.emojis[1],
-                                                title: "spooky",
-                                                numberOfPairs: 5,
-                                                color: Theme.RGBAColor(color: Color.orange)))
-        themes.append(createThemeWithComponents(emojis: ThemeStore.emojis.last!,
-                                                title: "love",
-                                                numberOfPairs: 3,
-                                                color: Theme.RGBAColor(color: Color.blue)))
-        return themes
-    }
-    
-    private static var emojis: [Set<String>] = [
-        ["😀", "😍", "😇", "🤪", "😎", "😡", "😤", "😈", "🤢", "🥶" ,"🤡"],
-        ["🎃", "👻", "😈", "🍭", "🦇", "🔪", "👹", "💀", "👁", "🦾"],
-        ["❤️", "💔", "💜", "💖", "💗", "💓", "😻", "👀", "👚", "👨‍👩‍👦‍👦"]
-    ]
-    
-    var themes: [Theme] {
-        didSet {
-            autoSave()
-        }
-    }
-    
-    private static func createThemeWithComponents(emojis: Set<String>,
-                                                  title: String,
-                                                  numberOfPairs: Int,
-                                                  color: Theme.RGBAColor) -> Theme {
-        let emojisArray = Array(emojis)
-        let emojisCount = min(emojisArray.count, numberOfPairs)
-        var indices = emojisArray.indices.shuffled()
-        indices.removeLast(indices.count - emojisCount)
-        return Theme(emojis: emojisArray,
-                     title: title.capitalized,
-                     numberOfPairs: emojisCount,
-                     color: color,
-                     playingEmojiIndices: indices.map { indices.firstIndex(of: $0)! })
-    }
-    
-    func getTheme() -> Theme {
-        return themes[themes.count.random()]
     }
 }
 

@@ -88,7 +88,6 @@
 				FA745644287228D8003020CA /* Model */,
 				FA44962B2872082D00A0CD97 /* Utils */,
 				FA0BFBCC2870FB1B0094B39B /* EmojiMemoryGame.swift */,
-				FA350F6B284BA92200B0B3E0 /* Extensions */,
 				FA31A09B28482D0B006B1270 /* MemorizeApp.swift */,
 				FA31A09F28482D0C006B1270 /* Assets.xcassets */,
 				FA31A0A128482D0C006B1270 /* Preview Content */,
@@ -102,13 +101,6 @@
 				FA31A0A228482D0C006B1270 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		FA350F6B284BA92200B0B3E0 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Extensions;
 			sourceTree = "<group>";
 		};
 		FA44962B2872082D00A0CD97 /* Utils */ = {
