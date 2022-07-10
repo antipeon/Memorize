@@ -131,27 +131,20 @@ struct ThemeEditor: View {
     struct StepperView: View {
         @Binding var theme: Theme
         
-        @State var incrementation = 0
-        var body: some View {
-            Stepper("\(theme.numberOfPairs) pairs", value: $incrementation, in: 2 - theme.numberOfPairs...theme.emojis.count - theme.numberOfPairs)
-                .onChange(of: incrementation) { [incrementation] newIncrementation in
-                    theme.numberOfPairs += (newIncrementation - incrementation)
-                }
+        @State var numberOfPairs: Int
+        
+        init(theme: Binding<Theme>) {
+            self._theme = theme
+            _numberOfPairs = State(wrappedValue: theme.wrappedValue.numberOfPairs)
         }
         
-//        private func incrementStep() {
-//            let newNumber = theme.numberOfPairs + 1
-//            if newNumber < theme.emojis.count {
-//                theme.numberOfPairs = newNumber
-//            }
-//        }
-//
-//        private func decrementStep() {
-//            let newNumber = theme.numberOfPairs - 1
-//            if newNumber >= 2 {
-//                theme.numberOfPairs = newNumber
-//            }
-//        }
+        var body: some View {
+            Stepper("\(numberOfPairs) pairs", value: $numberOfPairs, in: 2...theme.emojis.count, step: 1)
+                .onChange(of: numberOfPairs) { newNumberOfPairs in
+                    theme.numberOfPairs = newNumberOfPairs
+                    
+                }
+        }
         
         private var totalNumberOfPairs: Int {
             theme.numberOfPairs
