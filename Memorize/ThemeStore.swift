@@ -9,18 +9,12 @@ import SwiftUI
 
 class ThemeStore: ObservableObject {
     
-    var currentTheme: Theme!
-    
     // MARK: Intent(s)
     func addTheme(emojis: String, title: String, numberOfPairs: Int, color: Color) {
         themes.append(ThemeStore.createThemeWithComponents(emojis: Set(emojis.map { String($0) }),
                                                                   title: title,
                                                                   numberOfPairs: numberOfPairs,
                                                                   color: Theme.RGBAColor(color: color)))
-    }
-
-    func loadNewTheme() {
-        currentTheme = getTheme()
     }
     
     struct Autosave {
@@ -53,10 +47,10 @@ class ThemeStore: ObservableObject {
     
     init(themes: [Theme]) {
         self.themes = themes
-        loadNewTheme()
     }
     
     convenience init() {
+        let u = ThemeStore.Autosave.url
         if let url = ThemeStore.Autosave.url, let themes = try? ThemeStore.getThemesFromURL(url: url) {
             self.init(themes: themes)
         } else {
@@ -88,7 +82,11 @@ class ThemeStore: ObservableObject {
         ["❤️", "💔", "💜", "💖", "💗", "💓", "😻", "👀", "👚", "👨‍👩‍👦‍👦"]
     ]
     
-    var themes: [Theme]
+    var themes: [Theme] {
+        didSet {
+            autoSave()
+        }
+    }
     
     private static func createThemeWithComponents(emojis: Set<String>,
                                                   title: String,
