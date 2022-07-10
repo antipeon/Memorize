@@ -9,16 +9,9 @@ import SwiftUI
 
 struct ThemeChooser: View {
     
-    @EnvironmentObject var themeStore: ThemeStore {
-        didSet {
-            fillGameByThemeIdInfo()
-        }
-    }
+    @EnvironmentObject var themeStore: ThemeStore
     
     @State private var editMode: EditMode = .inactive
-
-    
-    @State var emojiMemoryGameByThemeId: Dictionary<UUID, EmojiMemoryGame> = [:]
     
     var body: some View {
         NavigationView {
@@ -45,37 +38,26 @@ struct ThemeChooser: View {
             }
             .navigationTitle("Choose theme")
             .toolbar {
-                EditButton()
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        themeStore.addTheme(emojis: "😀😃", title: "New", numberOfPairs: 2, color: .red)
+                        themeToEdit = themeStore.themes.last
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+                ToolbarItem {
+                    EditButton()
+                }
+                
             }
             .sheet(item: $themeToEdit) { theme in
                 ThemeEditor(theme: $themeStore.themes[theme])
             }
             .environment(\.editMode, $editMode)
         }
-        .onAppear {
-            fillGameByThemeIdInfo()
-        }
     }
     
-    private func fillGameByThemeIdInfo() {
-        for theme in themeStore.themes {
-            emojiMemoryGameByThemeId[theme.id] = EmojiMemoryGame(theme: theme)
-        }
-    }
-    
-    private func emojiMemoryGameByThemeId(id: UUID) -> EmojiMemoryGame {
-        if let game = emojiMemoryGameByThemeId[id] {
-            return game
-        }
-        guard let theme = themeStore.themes.first(where: {
-            $0.id == id
-        }) else {
-            fatalError("no such theme")
-        }
-        let game = EmojiMemoryGame(theme: theme)
-        emojiMemoryGameByThemeId[id] = game
-        return emojiMemoryGameByThemeId[id]!
-    }
     
     @State private var themeToEdit: Theme?
     
@@ -84,28 +66,6 @@ struct ThemeChooser: View {
             themeToEdit = theme
         }
     }
-    
-    private func navigationLinkToMemoryGameView(for theme: Theme) -> some View {
-        NavigationLink(destination: MemoryGameView(game: EmojiMemoryGame(theme: theme))) {
-            navigationLinkBody(for: theme)
-        }
-    }
-    
-    private func navigationLinkBody(for theme: Theme) -> some View {
-        VStack(alignment: .leading) {
-            name(of: theme)
-                .font(.title2)
-            emojiAndCardsNumberInfo(for: theme)
-                .lineLimit(nil)
-        }
-    }
-    
-    private func navigationLinkToEditTheme(for theme: Theme) -> some View {
-        NavigationLink(destination: ThemeEditor(theme: $themeStore.themes[theme])) {
-            navigationLinkBody(for: theme)
-        }
-    }
-    
         
     private func emojiAndCardsNumberInfo(for theme: Theme) -> some View {
         Text(numberOfPairsString(from: theme) + " " + theme.emojis.joined())
