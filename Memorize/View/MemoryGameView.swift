@@ -24,15 +24,15 @@ struct MemoryGameView: View {
     }
     
     private var cardsContent: some View {
-        AspectVGrid(items: game.cards, aspectRatio: 2/3) { card in
+        AspectVGrid(items: game.cards, aspectRatio: Constants.cardAspectRatio) { card in
             if card.isMatched && !card.isFaceUp {
                 Color.clear
             } else {
                 CardView(card: card)
-                    .padding(4)
+                    .padding(Constants.paddingLengthInGrid)
                     .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
                     .onTapGesture {
-                        withAnimation(.easeInOut(duration: 1.0)) {
+                        withAnimation(.easeInOut(duration: Constants.cardChooseAnimationDuration)) {
                             game.choose(card)
                         }
                     }
@@ -54,6 +54,12 @@ struct MemoryGameView: View {
         Text(game.score)
             .font(.largeTitle)
     }
+    
+    struct Constants {
+        static let cardAspectRatio: CGFloat = 2/3
+        static let cardChooseAnimationDuration = 1.0
+        static let paddingLengthInGrid: CGFloat = 4
+    }
 }
 
 
@@ -64,7 +70,7 @@ struct CardView: View {
         GeometryReader { geometry in
             Text(card.content)
                 .rotationEffect(Angle(degrees: card.isMatched && card.isFaceUp ? 360 : 0))
-                .animation(Animation.linear(duration: 1.0).repeatForever(autoreverses: false))
+                .animation(Animation.linear(duration: Constants.matchEffectAnimationDuration).repeatForever(autoreverses: false))
                 .font(Font.system(size: Constants.fontSize))
                 .scaleEffect(scale(thatFits: geometry.size))
                 .cardify(isFaceUp: card.isFaceUp, isMatched: card.isMatched)
@@ -82,6 +88,7 @@ struct CardView: View {
     struct Constants {
         static let fontScale = 0.8
         static let fontSize: CGFloat = 32
+        static let matchEffectAnimationDuration = 1.0
     }
 }
 

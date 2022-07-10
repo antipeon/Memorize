@@ -40,7 +40,10 @@ struct ThemeChooser: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
-                        themeStore.addTheme(emojis: "😀😃", title: "New", numberOfPairs: 2, color: .red)
+                        themeStore.addTheme(emojis: Constants.Theme.initialEmojis,
+                                            title: Constants.Theme.initialTitle,
+                                            numberOfPairs: Constants.Theme.initialNumberOfPairs,
+                                            color: .red)
                         themeToEdit = themeStore.themes.last
                     } label: {
                         Image(systemName: "plus")
@@ -81,6 +84,14 @@ struct ThemeChooser: View {
     private func name(of theme: Theme) -> some View {
         Text(theme.title.capitalized)
             .foregroundColor(Color(rgbaColor: theme.color))
+    }
+    
+    struct Constants {
+        struct Theme {
+            static let initialNumberOfPairs = 2
+            static let initialEmojis = "😀😃"
+            static let initialTitle = "New"
+        }
     }
 }
 
